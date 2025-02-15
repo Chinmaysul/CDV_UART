@@ -18,7 +18,6 @@ class uart_driver extends uvm_driver #(uart_trans);
   endfunction
 
   function void build_phase(uvm_phase phase);
-    // Get interface reference from config database
     if( !uvm_config_db #(virtual uart_intf)::get(this, "", "uart_intf", vif) )
       `uvm_error("", "uvm_config_db::get failed")
   endfunction 
@@ -27,11 +26,10 @@ class uart_driver extends uvm_driver #(uart_trans);
     forever
       begin
         seq_item_port.get_next_item(req);
-
-        `uvm_info("","---------------------------------------------",UVM_MEDIUM) 
-        `uvm_info("", $sformatf("\t Transaction No. = %0d",no_transactions),UVM_MEDIUM) 
         //Test tx
+        @(posedge vif.clk)
         vif.start <= 1;
+        vif.done <= 0;
         vif.rx <= 1;
         @(posedge vif.clk);
         vif.tx_data_in <= req.tx_data_in;
@@ -39,13 +37,11 @@ class uart_driver extends uvm_driver #(uart_trans);
         wait(vif.done_tx == 1);
         vif.start <= 0;
         if(vif.done_tx == 1) begin
+          `uvm_info("","---------------------------------------------",UVM_MEDIUM) 
+          `uvm_info("", $sformatf("\t Transaction No. = %0d",no_transactions),UVM_MEDIUM) 
           `uvm_info("", $sformatf("\t start = %0b, \t tx_data_in = %0h,\t done_tx %0b",vif.start,req.tx_data_in,vif.done_tx),UVM_MEDIUM)  
-          `uvm_info("","[TRANSACTION]::TX PASS",UVM_MEDIUM)  
+          `uvm_info("","[TRANSACTION]::TX DONE",UVM_MEDIUM)  
         end
-        else begin
-          `uvm_info("", $sformatf("\t start = %0b, \t tx_data_in = %0h,\t done_tx = %0b",vif.start,req.tx_data_in,vif.done_tx),UVM_MEDIUM)  
-          `uvm_info("","[TRANSACTION]::TX PASS",UVM_MEDIUM)  
-        end  
         repeat(100) @(posedge vif.clk);
         //Test rx
         @(posedge vif.clk);
@@ -59,18 +55,7 @@ class uart_driver extends uvm_driver #(uart_trans);
         vif.rx <= 1'b1;
         repeat(clock_divide) @(posedge vif.clk);
         repeat(100) @(posedge vif.clk); 
-        `uvm_info("", $sformatf("\t Expected data = %0h, \t Obtained data = %0h", data,vif.rx_data_out),UVM_MEDIUM)  
-        begin
-          if(vif.rx_data_out == data) begin
-            `uvm_info("","[TRANSACTION]::RX PASS",UVM_MEDIUM)  
-            `uvm_info("","---------------------------------------------",UVM_MEDIUM)  
-          end
-          else begin 
-            `uvm_info("","[TRANSACTION]::RX FAIL",UVM_MEDIUM)  
-            `uvm_info("","---------------------------------------------",UVM_MEDIUM)  
-          end
-        end
-
+        vif.done <= 1'b1;
         seq_item_port.item_done();
         no_transactions++;
       end
