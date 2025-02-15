@@ -6,6 +6,7 @@
 `include "driver.sv"
 `include "monitor.sv"
 `include "coverage.sv"
+`include "scoreboard.sv"
 `include "agent.sv"
 `include "env.sv"
 `include "test.sv"
