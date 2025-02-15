@@ -10,6 +10,7 @@ interface uart_intf;
   logic [7:0] rx_data_out;
   logic tx_active;
   logic done_tx; 
+  logic done;
 
 endinterface
   
