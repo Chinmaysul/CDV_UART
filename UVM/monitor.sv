@@ -32,6 +32,7 @@ class uart_mon extends uvm_monitor;
       trans.rx = intf.rx;
       trans.rx_data_out = intf.rx_data_out;
       trans.tx = intf.tx;
+      trans.done = intf.done;    
       ap_port.write(trans);
     end
   endtask
