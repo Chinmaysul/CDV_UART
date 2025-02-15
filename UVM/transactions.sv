@@ -15,6 +15,7 @@ class uart_trans extends uvm_sequence_item;
   bit [7:0] rx_data_out;
   bit tx_active;
   bit done_tx;
+  bit done;
 
 
   function new (string name = "");
